@@ -2,14 +2,20 @@ module aLawPart2_tb();
 
 reg [23:0] sim_uncompressed1;
 wire [14:0] sim_compressed;
-reg sim_clk;
+reg sim_clk, sim_read;
+wire sim_write;
 
 aLawPart2 dut(.uncompressed1(sim_uncompressed1), 
 	.compressed(sim_compressed), 
-	.clk(sim_clk)
+	.clk(sim_clk),
+	.read(sim_read), 
+	.write(sim_write)
 	);
 
 initial begin
+
+//set read to positive
+sim_read= 1'd1;
 
 //Give sim_uncompressed1 a value
 sim_uncompressed1= 24'b111000111000111000111000;
