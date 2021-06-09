@@ -1,6 +1,8 @@
 module aLawExpander2(input [14:0] compressed,
 							output [23:0] expanded,
-							input clk
+							input clk, 
+							input read, 
+							output write
 							);
 
 wire [14:0] compressed1;
@@ -32,5 +34,8 @@ end
 
 //Convert if negative (2s complement) 
 assign expanded= (sign== 1'b1)? (e): (((e)^24'b111111111111111111111111)+24'b1); 
+
+//Assign write 1 to incidate via handshake protocal that the expander is expanding	 
+assign write = (read)? 1'b1: 1'b0;
 
 endmodule 
