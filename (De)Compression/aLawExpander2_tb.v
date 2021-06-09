@@ -2,14 +2,20 @@ module aLawExpander2_tb();
 
 reg [14:0] sim_compressed;
 wire [23:0] sim_expanded;
-reg sim_clk;
+reg sim_clk, sim_read;
+wire sim_write;
 
 aLawExpander2 dut(.compressed(sim_compressed), 
 	.expanded(sim_expanded), 
-	.clk(sim_clk)
+	.clk(sim_clk),
+	.read(sim_read), 
+	.write(sim_write)
 	);
 
 initial begin
+
+//set read to positive
+sim_read= 1'd1;
 
 //Give sim_compressed a value
 sim_compressed= 15'b110101111110001;
