@@ -38,9 +38,9 @@ trans_start = 0;
 
 trans_start =1;
 bpsk_out = 1;
-#700;
+#600;
 trans_start = 0;
-#700;
+#650;
 if(trans_out != 1) begin
 error = 1;
 end
