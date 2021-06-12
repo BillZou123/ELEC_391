@@ -1,71 +1,97 @@
 // in channel, first attenuation then add noise
-module channel (input clk, input trans_rdy, input signed trans_out, input reset, output reg signed [10:0] chan_out);
+module channel (input clk, input chan_start, input signed [1:0] trans_out, input reset, output reg signed [11:0] chan_out, output reg chan_done);  /* use trans_start as the start signal for channel, so that transmitter and channel
+are working with the same pace*/
 
 wire [5:0] noise;
 reg [6:0] counter = 0;
-wire signed [24:0] trans_out_extend; 
+reg signed [25:0] trans_out_extend; 
 
 //pulse with noise
-wire signed [10:0] trans_out_ext_noise;
+reg signed [11:0] trans_out_ext_noise;
 //pulse with attenuation
-wire signed [10:0] trans_out_ext_atten;
+reg signed [11:0] trans_out_ext_atten;
 
 
+
+//states
+reg [2:0] state;
+
+parameter init = 3'b000;
+parameter signal_ext = 3'b001;
+parameter attenuation = 3'b010;
+parameter add_noise = 3'b011;
+parameter waiting = 3'b100;
+parameter done = 3'b101;
  
 
-assign trans_out_extend = trans_out * 10000000;  // change the unit of pulse.
 
 
 
-// add noise here
-noise_generator add_noise (clk, trans_rdy, noise);
 
-assign trans_out_ext_noise = trans_out_ext_atten + noise;
+// noise generator
+noise_generator noise_adding (clk, chan_start, noise);
 
 
-// attenuation here
-assign trans_out_ext_atten = trans_out_extend / 10000;
 
-// chan_out should be updated every 65 clk cycles
+
+
+
 
 always@(posedge clk) 
 begin
- if((!reset) && (trans_rdy ==1))
- begin
-  
-  if(counter < 64) 
+  if((!reset)) state = init;
+  else begin
+    case(state)
+     
+    init: 
      begin
-
-        counter = counter +1;
+       if(chan_start ==1) state = signal_ext;
+       else state = init;
+     end
+       
+    signal_ext:   //.................signal extension here
+     begin
+       trans_out_extend = trans_out * 10000000; // change the unit of pulse
+       state = attenuation;
      end
 
-  else 
+    attenuation:  //.................attenuation here, assume 80dB 
      begin
-        chan_out = trans_out_ext_noise;
-        counter = 0;
+       trans_out_ext_atten = trans_out_extend / 10000;
+       state = add_noise;
      end
 
- end
+    add_noise:  //...................add noise here
+     begin
+       trans_out_ext_noise = trans_out_ext_atten + noise;
+       chan_done = 1;
+       state = waiting;
+     end
 
-   
-    
+    waiting:  //.................wait for the transmitter to send the next signal
+     begin
+       if(chan_start ==0) state = done;
+       else state = waiting;
+     end
+
+    done:  //................channel has done producing one signal
+     begin
+       state = init;
+       chan_done = 0;
+     end
+
+endcase
+
+       
+
+       
  
 
 
-else begin
-
-chan_out = 0;
 
 
 end
-
 end
-
-
-
-
-
-
 endmodule
 
 
