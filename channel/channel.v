@@ -1,8 +1,9 @@
 // in channel, first attenuation then add noise
+`timescale 1 ps / 1 ps
 module channel (input clk, input chan_start, input signed [1:0] trans_out, input reset, output reg signed [11:0] chan_out, output reg chan_done);  /* use trans_start as the start signal for channel, so that transmitter and channel
 are working with the same pace*/
 
-wire [5:0] noise;
+wire [7:0] noise;
 reg [6:0] counter = 0;
 reg signed [25:0] trans_out_extend; 
 
@@ -20,7 +21,7 @@ parameter init = 3'b000;
 parameter signal_ext = 3'b001;
 parameter attenuation = 3'b010;
 parameter add_noise = 3'b011;
-parameter waiting = 3'b100;
+//parameter waiting = 3'b100;
 parameter done = 3'b101;
  
 
@@ -63,16 +64,19 @@ begin
 
     add_noise:  //...................add noise here
      begin
-       trans_out_ext_noise = trans_out_ext_atten + noise;
+       if(chan_start ==0) state = done;
+       else begin
+       chan_out = trans_out_ext_atten + noise;
        chan_done = 1;
-       state = waiting;
+       state = add_noise;
+     end
      end
 
-    waiting:  //.................wait for the transmitter to send the next signal
+    /*waiting:  //.................wait for the transmitter to send the next signal
      begin
        if(chan_start ==0) state = done;
        else state = waiting;
-     end
+     end*/
 
     done:  //................channel has done producing one signal
      begin
@@ -98,13 +102,13 @@ endmodule
 module noise_generator (clk, enable, Q);
 
 input clk, enable;
-output [5:0] Q;
+output [7:0] Q;
 reg [2:0] counter = 3'b0;
    always@(posedge clk) begin
 	   if (enable) begin
 		   counter = counter + 1'b1;
 	   end
    end
-   assign Q = {{2{counter[2]}}, counter, 1'd0};
+   assign Q = {counter[1],{2{counter[2]}}, counter, 2'd0};
 
 endmodule
