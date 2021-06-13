@@ -85,6 +85,7 @@ begin
      
     get_data_from_FIFO:
      begin
+	  if(multi_start == 1) begin
 	     if(counter_FIFO < 10) begin
 		     FIFO_addr = counter_FIFO;
 		     state = signal_ext;
@@ -95,6 +96,8 @@ begin
 			  counter_FIFO = FIFO_addr;  
 			  state = signal_ext;
 		  end
+	  end
+	  else state = get_data_from_FIFO;
      end 
 	     
     signal_ext:   //.................signal extension here
