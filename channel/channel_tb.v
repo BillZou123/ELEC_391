@@ -7,9 +7,9 @@ reg clk, reset;
 reg signed [1:0] trans_out;
 reg chan_start;
 
-wire signed [11:0] chan_out;
+wire signed [13:0] chan_out;
 wire chan_done;
-wire [6:0] noise;
+wire [7:0] noise;
 
 wire [2:0] state;
 assign state = DUT.state;
@@ -32,6 +32,7 @@ end
 initial begin
 
 
+
 reset = 0;
 #30;
 reset = 1;
@@ -42,40 +43,103 @@ chan_start =1;
 trans_out = 1;
 #600;
 chan_start = 0;
-#10;
+#100;
 
 chan_start =1;
 trans_out = -1;
 #600;
 chan_start = 0;
-#10;
+#100;
+
+chan_start =1;
+trans_out = 1;
+#600;
+chan_start = 0;
+#100;
 
 chan_start =1;
 trans_out = -1;
 #600;
 chan_start = 0;
-#10;
-
-chan_start =1;
-trans_out = -1;
-#600;
-chan_start = 0;
-#10;
-
-
-chan_start =1;
-trans_out = -1;
-#600;
-chan_start = 0;
-#10;
+#100;
 
 
 chan_start =1;
 trans_out = 1;
 #600;
 chan_start = 0;
-#10;
+#100;
 
+
+chan_start =1;
+trans_out = -1;
+#600;
+chan_start = 0;
+#100;
+
+
+chan_start =1;
+trans_out = 1;
+#600;
+chan_start = 0;
+#100;
+
+chan_start =1;
+trans_out = -1;
+#600;
+chan_start = 0;
+#100;
+
+chan_start =1;
+trans_out = 1;
+#600;
+chan_start = 0;
+#100;
+
+chan_start =1;
+trans_out = -1;
+#600;
+chan_start = 0;
+#100;
+
+
+chan_start =1;
+trans_out = 1;
+#600;
+chan_start = 0;
+#100;
+
+
+chan_start =1;
+trans_out = -1;
+#600;
+chan_start = 0;
+#100;
+
+
+chan_start =1;
+trans_out = 1;
+#600;
+chan_start = 0;
+#100;
+
+chan_start =1;
+trans_out = -1;
+#600;
+chan_start = 0;
+#100;
+
+chan_start =1;
+trans_out = 1;
+#600;
+chan_start = 0;
+#100;
+
+chan_start =1;
+trans_out = -1;
+#600;
+chan_start = 0;
+#100;
 
 
 
