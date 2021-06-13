@@ -26,6 +26,7 @@ parameter attenuation = 3'b010;
 parameter add_noise = 3'b011;
 parameter waiting = 3'b100;
 parameter done = 3'b101;
+parameter get_data_from_FIFO = 3'b110;
  
 
 
