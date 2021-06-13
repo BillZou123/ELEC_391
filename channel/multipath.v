@@ -11,7 +11,8 @@ reg signed [13:0] multi_out_ext_noise;
 //pulse with attenuation
 reg signed [13:0] multi_out_ext_atten;
 
-reg signed [4:0] counter = 0; // this is a counter counting the delay of signal (multipath effect)
+reg  [2:0] counter_delay = 0; // this is a counter counting the delay of signal (multipath effect),count to 5
+reg  [3:0] counter_FIFO =0; // this is the counter for FIFO,count to 10.
 
 
 
@@ -50,6 +51,8 @@ FIFO fifo_for_siganls (clk, multi_start, FIFO_addr, trans_out, reset, FIFO_out);
 
 
 
+
+
 always@(posedge clk) 
 begin
   if((!reset)) state = init;
@@ -67,34 +70,37 @@ begin
 
     waiting:  // count 300 clk cycles here, which is 5 symbols (signals delayed by 5 symbols)
      begin
-      counter = counter - 5;  // counter = -5
-      
        if(multi_start ==0)
          begin 
-           if(counter<0) 
-              begin
-                
-                counter = counter+1;
+           if(counter_delay < 5)  
+             begin
+                counter_delay = counter_delay + 1;
                 state = init;
-              end
-           else if (counter<10)
-              begin
-               FIFO_addr = counter;
-               counter = counter+1;
-               state = init;
+             end
+      
+           else 
+             begin
+                
+                if(counter_FIFO<10) 
+                   begin
+                     FIFO_addr = counter_FIFO;
+                     state = signal_ext;
+                    end
+                else  
+                   begin
+                     counter_FIFO = 0;
+                     FIFO_addr = counter_FIFO;
+                     state = signal_ext;
+                   end
                 
               end
-           else
-              begin
-               counter = 0;
-               state = init;
-              end
-            
-         end
+          end
+           
        
-       else 
-         
-           state = waiting;
+       
+       else state = waiting;
+    
+           
 
      end
      
@@ -128,7 +134,9 @@ begin
 
     done:  //................channel has done producing one signal
      begin
+       counter_FIFO = counter_FIFO+1'b1;
        state = init;
+       
        
      end
 
@@ -175,6 +183,12 @@ module FIFO (input clk, input FIFO_start, input [3:0] address, input signed [1:0
 reg [1:0] tmp [0:9];  // an array to store the trans_out signals when we are in the state "waiting"
 reg [3:0] counter = 0;
 
+reg [2:0] state;
+parameter init = 3'b000;
+parameter waiting = 3'b001;
+parameter done = 3'b010;
+
+
 assign FIFO_out = tmp [address];
 
 always@(posedge clk) 
@@ -192,32 +206,47 @@ begin
      tmp [7] = 0;
      tmp [8] = 0;
      tmp [9] = 0;
+     state = init;
      
      
     end
   else 
     begin
-     if(FIFO_start ==1)  // FIFO_start is connected with trans_done, each time there is a signal from transmitter, we go to store it in FIFO
-       begin
-         tmp [counter] = trans_out; // store the 10 signals that are produced by the transmitter while we are waiting
+      case(state)
+        init: begin
+          if(FIFO_start ==1) state = waiting;  // FIFO_start is connected with trans_done, each time there is a signal from transmitter, we go to store it in FIFO
+          else state = init;
+        
+         end
+
+        waiting: begin
+
+           tmp [counter] = trans_out; // store the 10 signals that are produced by the transmitter while we are waiting
+           if(FIFO_start ==0)
+             state = done;
+           else  state = waiting;
+
        end
-     else               //if trans_done = 0, no signal from transmitter, we update the FIFO counter to store the next signal from transmitter.
-       begin 
+
+        done: begin    //if trans_done = 0, no signal from transmitter, we update the FIFO counter to store the next signal from transmitter.
+
+
          if(counter<10) 
               begin
                 
                 counter = counter+1;
-                
+                state = init;  // go to init to wait for the next signal from transmitter
               end
             else 
               begin
-                
                 counter = 0;
+                state = init;
+                
               end
             
          end
        
-    end
+       endcase
 end     
-
+end
 endmodule
