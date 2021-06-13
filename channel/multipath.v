@@ -11,8 +11,8 @@ reg signed [13:0] multi_out_ext_noise;
 //pulse with attenuation
 reg signed [13:0] multi_out_ext_atten;
 
-reg  [2:0] counter_delay = 0; // this is a counter counting the delay of signal (multipath effect),count to 5
-reg  [3:0] counter_FIFO =0; // this is the counter for FIFO,count to 10.
+reg  [2:0] counter_delay = 0; // this is a counter counting the delay of signal (multipath effect),count to 5, (0~5 so delay 6 symbols)
+reg  [3:0] counter_FIFO =0; // this is the counter for FIFO,count to 9. (0~9)
 
 
 
@@ -68,7 +68,7 @@ begin
        else state = init;
      end
 
-    waiting:  // count 300 clk cycles here, which is 5 symbols (signals delayed by 5 symbols)
+    waiting:  // signals delayed by 6 symbols, counter_delay counts from 0 to 5
      begin
        if(multi_start ==0)
          begin 
@@ -231,7 +231,7 @@ begin
         done: begin    //if trans_done = 0, no signal from transmitter, we update the FIFO counter to store the next signal from transmitter.
 
 
-         if(counter<10) 
+         if(counter<9) 
               begin
                 
                 counter = counter+1;
