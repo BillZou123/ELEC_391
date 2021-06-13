@@ -1,4 +1,3 @@
-
 `timescale 1 ps / 1 ps
 module multipath (input clk, input multi_start, input signed [1:0] trans_out, input reset, output reg signed [13:0] multi_out);  
 
@@ -56,7 +55,14 @@ FIFO fifo_for_siganls (clk, multi_start, FIFO_addr, trans_out, reset, FIFO_out);
 
 always@(posedge clk) 
 begin
-  if((!reset)) state = init;
+  if((!reset)) begin
+FIFO_addr = 0;
+multi_out_extend = 0;
+multi_out_ext_noise=0;
+multi_out_ext_atten =0;
+multi_out = 0;
+state = init;
+end
   else begin
     case(state)
      
@@ -64,13 +70,19 @@ begin
      begin
        
 	    if(multi_start == 1)
-            state = waiting;
+             begin
+               if(counter_delay < 5)  state = waiting;
+               else state = get_data_from_FIFO;
+             end
+              
+           
           
-       else state = init;
+            else state = init;
      end
 
     waiting:  // signals delayed by 6 symbols, counter_delay counts from 0 to 5
      begin
+         
 	 if(multi_start == 0)
          begin 
            if(counter_delay < 5)  
@@ -93,7 +105,7 @@ begin
 	     else
 		  begin 
 			  counter_FIFO = 0;
-			  counter_FIFO = FIFO_addr;  
+			  FIFO_addr =counter_FIFO;  
 			  state = signal_ext;
 		  end
 	  end
@@ -102,7 +114,7 @@ begin
 	     
     signal_ext:   //.................signal extension here
      begin
-       multi_out_extend = FIFO_out * 60000000; // change the unit of pulse
+       multi_out_extend = FIFO_out * 43590000; // change the unit of pulse
        state = attenuation;
      end
 
@@ -114,8 +126,9 @@ begin
 
     add_noise:  //...................add noise here
 	begin
-	    if(multi_start == 0) begin
-       	    multi_out = multi_out_ext_atten + noise;
+	    multi_out = multi_out_ext_atten + noise;
+           if(multi_start == 0) begin
+       	    
             state = done;
             end
 	    else state = add_noise;
