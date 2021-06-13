@@ -1,5 +1,3 @@
-
-
 `timescale 1 ps/ 1 ps
 //module multipath (input clk, input multi_start, input signed [1:0] trans_out, input reset, output reg signed [13:0] multi_out);  
 
