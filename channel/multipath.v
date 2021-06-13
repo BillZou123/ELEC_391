@@ -86,7 +86,7 @@ begin
     get_data_from_FIFO:
      begin
 	     if(counter_FIFO < 10) begin
-		     counter_FIFO = FIFO_addr;
+		     FIFO_addr = counter_FIFO;
 		     state = signal_ext;
 	     end
 	     else
@@ -110,11 +110,13 @@ begin
      end
 
     add_noise:  //...................add noise here
-     begin
-       multi_out = multi_out_ext_atten + noise;
-       state = done;
-     end
-     end
+	begin
+	    if(multi_start == 0) begin
+       	    multi_out = multi_out_ext_atten + noise;
+            state = done;
+            end
+	    else state = add_noise;
+	end
 
     /*waiting:  //.................wait for the transmitter to send the next signal
      begin
