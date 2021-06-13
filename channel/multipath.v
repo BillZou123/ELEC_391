@@ -62,7 +62,7 @@ begin
     init: 
      begin
        
-       if(multi_start ==1)
+	    if(multi_start == 1)
             state = waiting;
           
        else state = init;
@@ -70,41 +70,32 @@ begin
 
     waiting:  // signals delayed by 6 symbols, counter_delay counts from 0 to 5
      begin
-       if(multi_start ==0)
+	 if(multi_start == 0)
          begin 
            if(counter_delay < 5)  
              begin
                 counter_delay = counter_delay + 1;
                 state = init;
              end
-      
-           else 
-             begin
-                
-                if(counter_FIFO<10) 
-                   begin
-                     FIFO_addr = counter_FIFO;
-                     state = signal_ext;
-                    end
-                else  
-                   begin
-                     counter_FIFO = 0;
-                     FIFO_addr = counter_FIFO;
-                     state = signal_ext;
-                   end
-                
-              end
-          end
-           
-       
-       
+	   else state = get_data_from_FIFO;
+         end    
        else state = waiting;
-    
-           
-
      end
      
-       
+    get_data_from_FIFO:
+     begin
+	     if(counter_FIFO < 10) begin
+		     counter_FIFO = FIFO_addr;
+		     state = signal_ext;
+	     end
+	     else
+		  begin 
+			  counter_FIFO = 0;
+			  counter_FIFO = FIFO_addr;  
+			  state = signal_ext;
+		  end
+     end 
+	     
     signal_ext:   //.................signal extension here
      begin
        multi_out_extend = FIFO_out * 60000000; // change the unit of pulse
@@ -119,10 +110,8 @@ begin
 
     add_noise:  //...................add noise here
      begin
-       if(multi_start ==0) state = done;
-       else begin
        multi_out = multi_out_ext_atten + noise;
-       state = add_noise;
+       state = done;
      end
      end
 
@@ -134,7 +123,7 @@ begin
 
     done:  //................channel has done producing one signal
      begin
-       counter_FIFO = counter_FIFO+1'b1;
+       counter_FIFO = counter_FIFO + 1'b1;
        state = init;
        
        
