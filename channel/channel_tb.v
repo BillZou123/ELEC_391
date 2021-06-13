@@ -16,6 +16,7 @@ assign state = DUT.state;
 assign noise = DUT.noise;
 channel DUT (clk, chan_start, trans_out, reset, chan_out, chan_done);
 
+
 initial begin
 clk =1;
 #5;
