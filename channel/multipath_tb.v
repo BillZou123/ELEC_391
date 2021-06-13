@@ -51,103 +51,103 @@ multi_start = 0;
 
 multi_start =1;
 trans_out = 1;
-#100;
+#600;
 multi_start = 0;
 #100;
 
 multi_start =1;
 trans_out = -1;
-#100;
+#600;
 multi_start = 0;
 #100;
 
 multi_start =1;
 trans_out = 1;
-#100;
+#600;
 multi_start = 0;
 #100;
 
 multi_start =1;
 trans_out = -1;
-#100;
-multi_start = 0;
-#100;
-
-
-multi_start =1;
-trans_out = 1;
-#100;
-multi_start = 0;
-#100;
-
-
-multi_start =1;
-trans_out = -1;
-#100;
+#600;
 multi_start = 0;
 #100;
 
 
 multi_start =1;
 trans_out = 1;
-#100;
+#600;
 multi_start = 0;
 #100;
+
 
 multi_start =1;
 trans_out = -1;
-#100;
-multi_start = 0;
-#100;
-
-multi_start =1;
-trans_out = 1;
-#100;
-multi_start = 0;
-#100;
-
-multi_start =1;
-trans_out = -1;
-#100;
+#600;
 multi_start = 0;
 #100;
 
 
 multi_start =1;
 trans_out = 1;
-#100;
+#600;
 multi_start = 0;
 #100;
 
+multi_start =1;
+trans_out = -1;
+#600;
+multi_start = 0;
+#100;
+
+multi_start =1;
+trans_out = 1;
+#600;
+multi_start = 0;
+#100;
 
 multi_start =1;
 trans_out = -1;
-#100;
+#600;
 multi_start = 0;
 #100;
 
 
 multi_start =1;
 trans_out = 1;
+#600;
+multi_start = 0;
 #100;
+
+
+multi_start =1;
+trans_out = -1;
+#600;
+multi_start = 0;
+#100;
+
+
+multi_start =1;
+trans_out = 1;
+#600;
 multi_start = 0;
 #100;
 
 multi_start =1;
 trans_out = -1;
-#100;
+#600;
 multi_start = 0;
 #100;
 
 multi_start =1;
 trans_out = 1;
-#100;
+#600;
 multi_start = 0;
 #100;
 
 multi_start =1;
 trans_out = -1;
-#100;
+#600;
 multi_start = 0;
 #100;
 
