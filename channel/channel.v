@@ -1,16 +1,16 @@
 // in channel, first attenuation then add noise
 `timescale 1 ps / 1 ps
-module channel (input clk, input chan_start, input signed [1:0] trans_out, input reset, output reg signed [11:0] chan_out, output reg chan_done);  /* use trans_start as the start signal for channel, so that transmitter and channel
+module channel (input clk, input chan_start, input signed [1:0] trans_out, input reset, output reg signed [13:0] chan_out, output reg chan_done);  /* use trans_start as the start signal for channel, so that transmitter and channel
 are working with the same pace*/
 
 wire [7:0] noise;
-reg [6:0] counter = 0;
-reg signed [25:0] trans_out_extend; 
+
+reg signed [27:0] trans_out_extend; 
 
 //pulse with noise
-reg signed [11:0] trans_out_ext_noise;
+reg signed [13:0] trans_out_ext_noise;
 //pulse with attenuation
-reg signed [11:0] trans_out_ext_atten;
+reg signed [13:0] trans_out_ext_atten;
 
 
 
@@ -33,6 +33,12 @@ parameter done = 3'b101;
 noise_generator noise_adding (clk, chan_start, noise);
 
 
+//multipath 
+
+//module multipath (input clk, input multi_start, input signed [1:0] trans_out, input reset, output reg signed [13:0] multi_out);  
+
+wire signed [13:0] multi_out;
+multipath multi_effect (clk,chan_start, trans_out, reset, multi_out);
 
 
 
@@ -52,13 +58,13 @@ begin
        
     signal_ext:   //.................signal extension here
      begin
-       trans_out_extend = trans_out * 10000000; // change the unit of pulse
+       trans_out_extend = trans_out * 90000000; // change the unit of pulse
        state = attenuation;
      end
 
     attenuation:  //.................attenuation here, assume 80dB 
      begin
-       trans_out_ext_atten = trans_out_extend / 10000;
+       trans_out_ext_atten = trans_out_extend / 100000;
        state = add_noise;
      end
 
@@ -66,7 +72,7 @@ begin
      begin
        if(chan_start ==0) state = done;
        else begin
-       chan_out = trans_out_ext_atten + noise;
+       chan_out = trans_out_ext_atten + noise + multi_out;
        chan_done = 1;
        state = add_noise;
      end
