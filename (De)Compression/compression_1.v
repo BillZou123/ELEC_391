@@ -1,6 +1,6 @@
-module aLawPart2(input [23:0]  uncompressed1,
+module compression(input [23:0]  uncompressed1,
 			input reset,
-						output reg [14:0] compressed,
+						output reg [10:0] compressed,
 						input clk, 
 						input compre_start, 
 						output reg compre_done
@@ -10,6 +10,9 @@ reg [23:0] out, f;
 reg [23:0] uncompressed;
 reg [23:0] intermediate, e; 
 reg [2:0] state;
+wire [23:0] real_data;
+
+assign real_data = {uncompressed1[7:0],uncompressed1[23:8]};
 
 parameter init = 3'b000;
 parameter find_sign = 3'b001;
@@ -27,22 +30,22 @@ else begin
 case(state)
 
 init: begin
+	compre_done = 0;
 	if(compre_start) begin
 		state = find_sign;
-		compre_done = 0;
 		end
 	else state = init;
 	end
 find_sign: begin
 
 //check sign
-	if(uncompressed1[23] == 1'b0) begin
-		uncompressed = uncompressed1;
+	if(real_data[23] == 1'b0) begin
+		uncompressed = real_data;
 		sign = 1;
 		state = operation1;
 		end
 	else begin
-		uncompressed = (uncompressed1^24'b111111111111111111111111)+24'b1;
+		uncompressed = (real_data^24'b111111111111111111111111)+24'b1;
 		sign = 0;
 		state = operation1;
 		end//Assign 1 if positive, 0 if negative
@@ -611,17 +614,16 @@ else
 end
 
 done: begin
-
 //assign output 
 //Convert if negative (2s complement) 
-compressed = (sign == 1'b1)? ({e[7:0],out[6:0]}): ((({e[7:0],out[6:0]})^15'b111111111111111)+15'b1); 
+	compressed = (sign == 1'b1)? ({e[7:0],out[2:0]}): ((({e[7:0],out[2:0]})^11'b11111111111)+1'b1); 
 
 //Assign write 1 to incidate via handshake protocal that the compressor is compressing	 
-compre_done = 1;
-state = init;
-end
-endcase
-end
+	compre_done = 1;
+	state = init;
+      end
+    endcase
+  end
 end
 	
 endmodule
