@@ -1,12 +1,12 @@
-module aLawPart2_tb();
+module compression_tb();
 
 reg [23:0] sim_uncompressed1;
-wire [14:0] sim_compressed;
+wire [10:0] sim_compressed;
 reg sim_clk, sim_read;
 wire sim_write;
 reg reset;
 
-aLawPart2 dut(.uncompressed1(sim_uncompressed1), 
+compression dut(.uncompressed1(sim_uncompressed1), 
 	.compressed(sim_compressed), 
 	.clk(sim_clk),
 	.compre_start(sim_read), 
@@ -29,7 +29,7 @@ sim_uncompressed1= 24'b111000111000111000111000;
 //001010000000000000000000
 #10;
 sim_read= 1'd0;
-#60
+#100
 sim_read= 1'd1;
 //Toggle the sim_uncompressed1 bit
 sim_uncompressed1= 24'b010000111010111000101100;
@@ -60,7 +60,7 @@ sim_uncompressed1= 24'b111111000101010100111000;
 //001010000000000000000000
 #10;
 sim_read= 1'd0;
-#60
+#100
 sim_read= 1'd1;
 sim_uncompressed1= 24'b100000000000000000111000;
 //001010000000000000000000
@@ -72,7 +72,7 @@ sim_uncompressed1= 24'b111111100011111111111111;
 //001010000000000000000000
 #10;
 sim_read= 1'd0;
-#60
+#80
 sim_read= 1'd1;
 sim_uncompressed1= 24'b111000100000111010000000;
 //001010000000000000000000
