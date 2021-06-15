@@ -1,4 +1,4 @@
-module bpsk 
+module modulator
 	
 //modified to: take 1bit in, and outputs 2bit signed. 
 
