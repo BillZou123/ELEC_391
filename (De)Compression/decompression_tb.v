@@ -80,6 +80,8 @@ wire decomp_done;
 wire [23:0] decomp_out;
 
 
+wire [2:0] state_decoder;
+assign state_decoder = DUT7.state;
 
 
 
@@ -122,7 +124,7 @@ reset = 1;
 comp_start = 0;
 #20;
 
-signal_in = 24'b0101_0101_0101_0101_0101_0101;
+signal_in = 24'b0101_0101_0101_0101_00001111;
 
 comp_start =1;
 //bpsk_out = 1;
@@ -130,7 +132,7 @@ comp_start =1;
 comp_start = 0;
 #20000;
 
-signal_in = 24'b10101010_10101010_10101010;
+signal_in = 24'b10101010_10101010_11110000;
 //bpsk_out = -1;
 comp_start =1;
 #10;
