@@ -1,34 +1,79 @@
-module Hamming15_dec(	clk, reset, in, out, 
-			dec_ready, dec_done	
-			);
+
+`timescale 1 ps / 1 ps
+module error_decoder (clk, reset, in, dec_out, dec_start, dec_done);
+			
 
 input clk, reset;
 input [15:0] in;
-input dec_ready; 
+input dec_start; 
 
-output reg [10:0] out;
+reg [10:0] out;
 output reg dec_done; 
 
 // local wires
-wire p1, p2, p4, p8, p0;
-wire [3:0] err_pos; 
+reg p1, p2, p4, p8, p0;
+reg [3:0] err_pos; 
 reg [15:0] t; 
 
+
+reg [2:0] state;
+
+parameter init = 3'b000;
+parameter operation1 = 3'b001;
+parameter operation2 = 3'b010;
+parameter done = 3'b011;
+
+
 //t = in; // copy input
+output reg [10:0] dec_out;
 
 
 
-assign p1 = in[5] ^ in[9]  ^ in[13] ^ in[3] ^ in[7] ^ in[11] ^ in[15]; // column 2 and 4
-assign p2 = in[6] ^ in[10] ^ in[14] ^ in[3] ^ in[7] ^ in[11] ^ in[15]; // column 3 and 4
+always@(posedge clk) begin
 
-assign p4 = in[5] ^ in[6]  ^ in[7]  ^ in[12]^ in[13] ^ in[14] ^ in[15]; // row 2 & 4
-assign p8 = in[9] ^ in[10] ^ in[11] ^ in[12]^ in[13] ^ in[14] ^ in[15];// row 3 & 4
+if(!reset) state = init;
+else begin
+  case(state)
 
-assign p0 = in[3] ^ in[5] ^ in[6] ^ in[7] ^ in[9] ^ in[10] ^ in[11] ^ in[12] ^ in[13] ^ in[14] ^ in[15] ^  p1 ^ p2 ^ p4 ^ p8; 
+   init: begin
+        dec_done = 0;
+       if(dec_start ==1) state = operation1;
+       else state = init;
+   end
+
+
+   operation1: begin
+        
+      p1 = in[5] ^ in[9]  ^ in[13] ^ in[3] ^ in[7] ^ in[11] ^ in[15]; // column 2 and 4
+      p2 = in[6] ^ in[10] ^ in[14] ^ in[3] ^ in[7] ^ in[11] ^ in[15]; // column 3 and 4
+
+      p4 = in[5] ^ in[6]  ^ in[7]  ^ in[12]^ in[13] ^ in[14] ^ in[15]; // row 2 & 4
+      p8 = in[9] ^ in[10] ^ in[11] ^ in[12]^ in[13] ^ in[14] ^ in[15];// row 3 & 4
+
+      p0 = in[3] ^ in[5] ^ in[6] ^ in[7] ^ in[9] ^ in[10] ^ in[11] ^ in[12] ^ in[13] ^ in[14] ^ in[15] ^  p1 ^ p2 ^ p4 ^ p8; 
 
 // find the error position
-assign err_pos = ( (p1 ~^ in[1]) ? 4'b0000 : 4'b0001 ) + ( (p2 ~^ in[2]) ? 4'b0000 : 4'b0010 ) + ( (p4 ~^ in[4]) ? 4'b0000 : 4'b0100 ) + ( (p8 ~^ in[8]) ? 4'b0000 : 4'b1000 );
+      err_pos = ( (p1 ~^ in[1]) ? 4'b0000 : 4'b0001 ) + ( (p2 ~^ in[2]) ? 4'b0000 : 4'b0010 ) + ( (p4 ~^ in[4]) ? 4'b0000 : 4'b0100 ) + ( (p8 ~^ in[8]) ? 4'b0000 : 4'b1000 );
+      state = operation2;
 
+     end
+
+
+    operation2: begin
+
+      dec_out = out;
+      dec_done = 1;
+      state = done;
+    end
+
+
+    done: begin
+      state = init;
+     end
+
+    endcase
+   end
+end
 /*//debugging
 wire c1, c2, c4, c8; 
 wire [3:0] s1, s2, s4, s8; 
@@ -41,7 +86,7 @@ assign err_pos = s1+s2+s4+s8;
 
 always @ (posedge clk) begin
  // t = in; 
-  if (reset == 0 && dec_ready == 1) begin 
+  
 	//t[err_pos] = !(in[err_pos]); //flip the error bit
 	case (err_pos)
 	   4'b0011: begin//3
@@ -118,8 +163,7 @@ always @ (posedge clk) begin
 	   end
 	endcase
 
- end // of if
- else begin out = 0; dec_done = 0; end
+ 
 end // of always block
 
 /*
@@ -141,107 +185,3 @@ end // of always block
 endmodule
 
 
-module Hamming15_dec_tb();
-
-reg clk, reset;
-reg [15:0] in; // 11 bit input
-reg dec_ready;
-
-wire [10:0] out; //15 bit output (4 parity bits)
-wire dec_done; // to signal encoder is ready for next 11 bits data
-
-// local wire for tb
-reg error; 
-
-Hamming15_dec DUT(	clk, reset, in, out, 
-			dec_ready, dec_done
-		);
-
-// intitate the clock
-initial begin
-   clk=1;
-   #5;
-
- forever begin
-   clk=0;
-   #5;
-   clk=1;
-   #5;
- end
-end //of initial clock
-
-initial begin
-
-
-reset = 0; dec_ready = 0; //testing the ready signal
-in = 16'b0001_1101_1000_101x; 	#10;
-if (out != 0) error = 1; else error = 0;
-
-dec_ready = 1; 
-#10; 
-if (out != 11'b0001_110_100_1) error = 1; else error = 0;
-#10;
-in = 16'b1111_0000_0011_001x;  	#10;
-if (out != 11'b1111_000_001_0) error = 1; else error = 0;
-#10;
-in = 16'b1001_0011_0101_111x;  	#10;
-if (out != 11'b1001_001_010_1) error = 1; else error = 0;
-#10;
-
-//testing reset
-reset = 1; 
-#20; 
-reset = 0; 
-
-// to see if error gets corrected
-in = 16'b1001_1011_0101_111x;  	#10;
-if (out != 11'b1001_001_010_1) error = 1; else error = 0;
-#10;
-in = 16'b1111_0000_1011_001x;  	#10;
-if (out != 11'b1111_000_001_0) error = 1; else error = 0;
-#10;
-in = 16'b0000_0000_0000_100x;  	#10;
-if (out != 11'b0000_000_000_0) error = 1; else error = 0;
-#10;
-in = 16'b0000_0000_0010_000x;  	#10;
-if (out != 11'b0000_000_000_0) error = 1; else error = 0;
-#10;
-in = 16'b0000_0000_0100_000x;  	#10;
-if (out != 11'b0000_000_000_0) error = 1; else error = 0;
-#10;
-in = 16'b0000_0000_1000_000x;  	#10;
-if (out != 11'b0000_000_000_0) error = 1; else error = 0;
-#10;
-in = 16'b0000_0010_0000_000x;  	#10;
-if (out != 11'b0000_000_000_0) error = 1; else error = 0;
-#10;
-in = 16'b0000_0100_0000_000x;  	#10;
-if (out != 11'b0000_000_000_0) error = 1; else error = 0;
-#10;
-in = 16'b0000_1000_0000_000x;  	#10;
-if (out != 11'b0000_000_000_0) error = 1; else error = 0;
-#10;
-in = 16'b0001_0000_0000_000x;  	#10;
-if (out != 11'b0000_000_000_0) error = 1; else error = 0;
-#10;
-in = 16'b0010_0000_0000_000x;  	#10;
-if (out != 11'b0000_000_000_0) error = 1; else error = 0;
-#10;
-in = 16'b0100_0000_0000_000x;  	#10;
-if (out != 11'b0000_000_000_0) error = 1; else error = 0;
-#10;
-in = 16'b1000_0000_0000_000x;  	#10;
-if (out != 11'b0000_000_000_0) error = 1; else error = 0;
-#10;
-
-
-
-
-if (error == 1)  $display("Error!");
-else $display("All good!");
-$stop; 
-end
-
-
-
-endmodule
