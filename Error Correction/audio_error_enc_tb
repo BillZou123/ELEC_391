@@ -1,0 +1,102 @@
+module error_encoder_tb();
+
+reg [23:0] sim_uncompressed1;
+wire [15:0] encoder_out;
+wire [10:0] sim_compressed;
+reg sim_clk, sim_read;
+wire sim_write, encoder_done;
+reg reset;
+
+compression dut(.uncompressed1(sim_uncompressed1), 
+	.compressed(sim_compressed), 
+	.clk(sim_clk),
+	.compre_start(sim_read), 
+	.compre_done(sim_write),
+	.reset(reset)
+	);
+
+error_encoder dut2(.clk(sim_clk), .reset(reset), .in(sim_compressed), .out(encoder_out), 
+			.enc_start(sim_write), .enc_done(encoder_done)   // for handshake protocaols
+			);
+
+initial begin
+
+reset = 0;
+#20;
+reset = 1;
+#10
+sim_read= 1'd0;
+#10
+//set read to positive
+sim_read= 1'd1;
+//Give sim_uncompressed1 a value
+sim_uncompressed1= 24'b111000111000111000111000;
+//001010000000000000000000
+#10;
+sim_read= 1'd0;
+#100
+sim_read= 1'd1;
+//Toggle the sim_uncompressed1 bit
+sim_uncompressed1= 24'b010000111010111000101100;
+//110110000000000000000000
+#10;
+sim_read= 1'd0;
+#60
+sim_read= 1'd1;
+sim_uncompressed1= 24'b010000111010111111111100;
+//110110000000000000000000
+#10;
+sim_read= 1'd0;
+#60
+sim_read= 1'd1;
+sim_uncompressed1= 24'b010000100010011000101100;
+//110110000000000000000000
+#10;
+sim_read= 1'd0;
+#60
+sim_read= 1'd1;
+sim_uncompressed1= 24'b010111111000001000101100;
+//110110000000000000000000
+#10;
+sim_read= 1'd0;
+#60
+sim_read= 1'd1;
+sim_uncompressed1= 24'b111111000101010100111000;
+//001010000000000000000000
+#10;
+sim_read= 1'd0;
+#100
+sim_read= 1'd1;
+sim_uncompressed1= 24'b100000000000000000111000;
+//001010000000000000000000
+#10;
+sim_read= 1'd0;
+#60
+sim_read= 1'd1;
+sim_uncompressed1= 24'b111111100011111111111111;
+//001010000000000000000000
+#10;
+sim_read= 1'd0;
+#80
+sim_read= 1'd1;
+sim_uncompressed1= 24'b111000100000111010000000;
+//001010000000000000000000
+#10;
+sim_read= 1'd0;
+#60
+$stop;
+
+end 
+
+always
+begin
+
+//Clock
+sim_clk= 1'b0;
+#5;
+sim_clk= 1'b1;
+#5;
+
+end 
+
+endmodule 
