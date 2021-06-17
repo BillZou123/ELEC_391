@@ -20,14 +20,15 @@ assign sign= (compressed[10]==1'b0)? 1'b1: 1'b0;
 
 always @(posedge clk) begin 
 
-//check bottom 7 bits
+//check bottom 5 bits
 if (compressed1[4:0]!=5'b0)begin
-			 b= 24'd2**(compressed1[4:0]);
+	b= 24'd2**(compressed1[4:0]);	//This is f from the compressor
 end
 else  b= 24'd2;
-
+//This is increment from compressor
 middle= (24'd16*24'd2**(compressed1[4:0]));
-//check top 8 bits
+//check top 6 bits
+	//Solve for uncompressed
 e= ((b*(compressed1[10:5] + 24'd1))+ middle);	
 
 end
