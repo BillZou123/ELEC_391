@@ -18,42 +18,8 @@ assign sign= (uncompressed1[23]==24'b0)? 1'b1: 1'b0;
 //Assign 1 if positive, 0 if negative
 
 always @(posedge clk) begin
+
 //Find most significant 1 place
-
-/*
-	casex(uncompressed)
-	
-		//24'b000000000000000000000001: out<= 24'd0;
-		//24'b00000000000000000000001x: out<= 24'd1;
-		//24'b0000000000000000000001xx: out<= 24'd2;
-		//24'b000000000000000000001xxx: out<= 24'd3;
-		//24'b00000000000000000001xxxx: out<= 24'd4;
-		24'b0000000000000000001xxxxx: out<= 24'd0;
-		24'b000000000000000001xxxxxx: out<= 24'd1;
-		24'b00000000000000001xxxxxxx: out<= 24'd2;
-		24'b0000000000000001xxxxxxxx: out<= 24'd3;
-		24'b000000000000001xxxxxxxxx: out<= 24'd4;
-		24'b00000000000001xxxxxxxxxx: out<= 24'd5;
-		24'b0000000000001xxxxxxxxxxx: out<= 24'd6;
-		24'b000000000001xxxxxxxxxxxx: out<= 24'd7;
-		24'b00000000001xxxxxxxxxxxxx: out<= 24'd8;
-		24'b0000000001xxxxxxxxxxxxxx: out<= 24'd9;
-		24'b000000001xxxxxxxxxxxxxxx: out<= 24'd10;
-		24'b00000001xxxxxxxxxxxxxxxx: out<= 24'd11;
-		24'b0000001xxxxxxxxxxxxxxxxx: out<= 24'd12;
-		24'b000001xxxxxxxxxxxxxxxxxx: out<= 24'd13;
-		24'b00001xxxxxxxxxxxxxxxxxxx: out<= 24'd14;
-		24'b0001xxxxxxxxxxxxxxxxxxxx: out<= 24'd15;
-		24'b001xxxxxxxxxxxxxxxxxxxxx: out<= 24'd16;
-		24'b01xxxxxxxxxxxxxxxxxxxxxx: out<= 24'd17;
-		24'b1xxxxxxxxxxxxxxxxxxxxxxx: out<= 24'd18;
-		
-		default:	out<= 24'd0; //all zero, may need to change this
-	
-	endcase
-	*/
-
-
 out= (uncompressed<(24'd32*(24'd2**24'd0)))?24'd0: 
 		(uncompressed<(24'd32*(24'd2**24'd1)))?24'd1:
 		(uncompressed<(24'd32*(24'd2**24'd2)))?24'd2:
@@ -84,6 +50,7 @@ if (out==24'd0)
 else 
 	f=(24'd2**out);		
 
+	//Find estimate of intermediate in terms of f
 if (intermediate< (f*(12'd0 +12'd1)))
 	 e= 12'd0;
 else if (intermediate< (f*(12'd1 +12'd1)))
@@ -603,6 +570,7 @@ end
 	
 //assign output 
 //Convert if negative (2s complement) 
+//E will indicate the estimate, out will indicate the exponent
 assign compressed= (sign== 1'b1)? ({e[5:0],out[4:0]}): ((({e[5:0],out[4:0]})^11'b11111111111)+11'b1); 
 
 //Assign write 1 to incidate via handshake protocal that the compressor is compressing	 
